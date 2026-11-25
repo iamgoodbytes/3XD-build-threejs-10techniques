@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stap 6 – Eindeloze rit</title>
+  <style>
+    #stats { font-variant-numeric: tabular-nums; }
+    #stats b { display: inline-block; min-width: 4ch; }
+    #overlay {
+      position: fixed; inset: 0; display: grid; place-items: center;
+      background: rgba(0, 0, 0, 0.35); color: #fff;
+      font: 16px/1.6 system-ui, sans-serif; text-align: center;
+    }
+    #overlay.hidden { display: none; }
+    #overlay .panel { background: rgba(0, 0, 0, 0.65); padding: 28px 40px; border-radius: 12px; }
+    #overlay h1 { font-size: 32px; margin-bottom: 8px; }
+    #overlay .key { margin-top: 16px; font-size: 18px; }
+    #overlay kbd { background: #fff; color: #000; border-radius: 4px; padding: 2px 8px; font: inherit; }
+  </style>
+</head>
+<body>
+  <div id="hud">
+    <h1>Stap 6 – Eindeloze rit</h1>
+    <div id="stats">
+      Score: <b id="score">0</b> · Afstand: <b id="distance">0</b> m<br />
+      Snelheid: <b id="speed">0</b> km/u · Ladingen: <b id="charges">💣💣💣</b>
+    </div>
+    <a href="/">← overzicht</a>
+  </div>
+
+  <div id="overlay">
+    <div class="panel">
+      <h1 id="overlay-title">Eindeloze rit</h1>
+      <p id="overlay-text">
+        <b>W/↑</b> = gas · <b>S/↓</b> = rem · <b>A/D</b> of <b>←/→</b> = sturen<br />
+        Rij blokjes omver voor punten · ontwijk de <span style="color:#ff6b6b">rode barrières</span><br />
+        <b>Klik</b> op een barrière om ze op te blazen (beperkte ladingen, +1 per 200 m)
+      </p>
+      <p class="key"><kbd>Spatie</kbd> om te starten</p>
+    </div>
+  </div>
+
+  <script type="module" src="../slides/slides.js"></script>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

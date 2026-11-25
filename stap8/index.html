@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stap 8 – Nachtdienst (ambulance)</title>
+  <style>
+    :root { --neon: #ff2bd6; --cyan: #00f0ff; --hud-font: 'Arial Black', 'Helvetica Neue', Impact, sans-serif; }
+
+    /* ---- HUD ---- */
+    .hud-text { font-family: var(--hud-font); font-style: italic; text-transform: uppercase; color: #fff;
+      text-shadow: 2px 2px 0 #000, 0 0 12px rgba(255, 43, 214, 0.6); pointer-events: none; }
+    #hud-left { position: fixed; top: 14px; left: 16px; font-size: 15px; line-height: 1.5; }
+    #hud-left .big { font-size: 30px; color: var(--cyan); }
+    #hud-left a { color: #8ecaff; font: 12px system-ui, sans-serif; text-shadow: none; pointer-events: auto; }
+
+    #damage { position: fixed; top: 16px; right: 18px; text-align: right; font-size: 14px; }
+    #damage .bar { width: 220px; height: 14px; border: 2px solid #fff; margin-top: 6px; transform: skewX(-15deg); background: rgba(0,0,0,0.4); }
+    #damage .fill { height: 100%; width: 0%; background: linear-gradient(90deg, #ffcc00, #ff2a2a); transition: width 0.3s; }
+
+    #mission { position: fixed; top: 14px; left: 50%; transform: translateX(-50%); text-align: center; font-size: 16px;
+      background: rgba(0, 0, 0, 0.55); padding: 8px 22px; border-radius: 10px; }
+    #mission .goal { font-size: 22px; color: #3dff8a; }
+    #mission .goal.pickup { color: #ff6b81; }
+    #mission .stats { margin-top: 2px; }
+    #mission .low { color: #ff4d4d; }
+
+    #loading { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); text-align: center;
+      font-size: 16px; opacity: 0; transition: opacity 0.2s; }
+    #loading.visible { opacity: 1; }
+    #loading .bar { width: 240px; height: 10px; border: 2px solid #fff; margin-top: 4px; transform: skewX(-15deg); }
+    #loading .fill { height: 100%; width: 0%; background: #3dff8a; }
+
+    #radio { position: fixed; bottom: 16px; left: 16px; font-size: 13px; opacity: 0.85; }
+    #controls { position: fixed; bottom: 16px; right: 16px; font: 12px/1.5 system-ui, sans-serif; color: #ccc;
+      text-align: right; background: rgba(0,0,0,0.45); padding: 6px 10px; border-radius: 6px; pointer-events: none; }
+
+    /* ---- Pop-ups ("+100 AANRIJDING") ---- */
+    #popups { position: fixed; top: 22%; left: 50%; transform: translateX(-50%); text-align: center; pointer-events: none; }
+    .popup { font-size: 30px; animation: pop 1.3s ease-out forwards; }
+    @keyframes pop {
+      0% { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+      15% { transform: scale(1.15) rotate(-3deg); opacity: 1; }
+      30% { transform: scale(1) rotate(-3deg); }
+      100% { transform: translateY(-60px) rotate(-3deg); opacity: 0; }
+    }
+
+    /* ---- Start / game over ---- */
+    #overlay { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(5, 5, 20, 0.55); }
+    #overlay.hidden { display: none; }
+    #overlay .panel { text-align: center; color: #fff; font: 15px/1.7 system-ui, sans-serif; }
+    #overlay h1 { font-family: var(--hud-font); font-style: italic; font-size: 64px; letter-spacing: 2px;
+      color: #fff; text-shadow: 0 0 18px var(--neon), 0 0 40px var(--neon), 4px 4px 0 #000; }
+    #overlay .sub { font-family: var(--hud-font); font-style: italic; color: var(--cyan); margin-bottom: 14px; text-transform: uppercase; }
+    #overlay kbd { background: #fff; color: #000; border-radius: 4px; padding: 1px 7px; font: inherit; font-weight: 700; }
+    #overlay .key { margin-top: 18px; font-size: 18px; }
+
+    /* ---- Preloader (zie stap 7) ---- */
+    #loader { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; align-content: center; gap: 14px;
+      background: #07070f; color: #fff; font: 15px/1.5 system-ui, sans-serif; transition: opacity 0.6s ease; }
+    #loader.done { opacity: 0; pointer-events: none; }
+    #loader .title { font-family: var(--hud-font); font-style: italic; font-size: 30px; text-shadow: 0 0 16px var(--neon); }
+    #loader .bar { width: min(360px, 70vw); height: 10px; background: #22223a; overflow: hidden; transform: skewX(-15deg); }
+    #loader .bar-fill { width: 0%; height: 100%; background: linear-gradient(90deg, var(--cyan), var(--neon)); transition: width 0.25s ease; }
+    #loader .status { opacity: 0.75; font-size: 13px; min-height: 1.5em; }
+    #loader.error .status { color: #ff8fa3; opacity: 1; }
+  </style>
+</head>
+<body>
+  <div id="loader">
+    <div class="title">NACHTDIENST</div>
+    <div class="bar"><div class="bar-fill"></div></div>
+    <div class="status">Starten…</div>
+  </div>
+
+  <div id="hud-left" class="hud-text">
+    <div class="big" id="score">0</div>
+    <div><span id="speed">0</span> km/u</div>
+    <div>Afgeleverd <span id="delivered">0</span> · gemist <span id="missed">0</span></div>
+    <a href="/">← overzicht</a>
+  </div>
+
+  <div id="mission" class="hud-text">
+    <div class="goal pickup" id="goal">🚑 Haal de gewonde op</div>
+    <div class="stats"><span id="timer">60</span> s · gezondheid <span id="health">100</span>% · <span id="target-distance">0</span> m</div>
+  </div>
+
+  <div id="damage" class="hud-text">
+    Schade
+    <div class="bar"><div class="fill"></div></div>
+  </div>
+
+  <div id="loading" class="hud-text">
+    <span id="loading-label">Inladen…</span>
+    <div class="bar"><div class="fill"></div></div>
+  </div>
+
+  <div id="radio" class="hud-text">📻 radio uit (M)</div>
+  <div id="controls">
+    W/S gas/achteruit · A/D sturen · Spatie handrem<br />
+    H sirene · C camera · N dag/nacht · M radio
+  </div>
+  <div id="popups"></div>
+
+  <div id="overlay" class="hidden">
+    <div class="panel">
+      <h1 id="overlay-title">NACHTDIENST</h1>
+      <div class="sub" id="overlay-sub">Jij bent de ambulance. De stad rekent op je.</div>
+      <p id="overlay-text">
+        <b>W/S</b> gas/achteruit · <b>A/D</b> sturen · <b>Spatie</b> handrem (drift!) · <b>C</b> camera · <b>N</b> dag/nacht<br />
+        <b>H</b> sirene: je rijdt sneller en het verkeer maakt plaats, maar botsingen doen ×1,5 schade.<br />
+        Volg de <b>pijl</b> en de <b>lichtzuil</b> naar de gewonde. Stop ernaast om in te laden.<br />
+        Breng de gewonde dan naar het <b>ziekenhuis</b> (rood kruis) en stop in de groene zone.<br />
+        Botsen met auto’s, voetgangers of gebouwen geeft <b>schade</b>. De sirene maakt de weg vrij.
+      </p>
+      <p class="key"><kbd>Spatie</kbd> om te starten</p>
+    </div>
+  </div>
+
+  <script type="module" src="../slides/slides.js"></script>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

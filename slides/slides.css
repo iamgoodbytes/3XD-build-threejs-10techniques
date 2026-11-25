@@ -1,0 +1,196 @@
+/* SLIDES – overlay "achterliggende techniek" (zie slides.js) */
+
+:root {
+  --sl-bg: #0d1017;
+  --sl-panel: #141923;
+  --sl-line: rgba(255, 255, 255, 0.09);
+  --sl-text: #e7ebf3;
+  --sl-muted: #98a2b8;
+  --sl-accent: #ffb547;
+  --sl-accent-soft: rgba(255, 181, 71, 0.13);
+  --sl-blue: #7cc4ff;
+  --sl-font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --sl-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+/* ---- Knop in de demo ---- */
+.sl-launch {
+  position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 50;
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 10px 14px 10px 12px; border-radius: 999px;
+  background: rgba(13, 16, 23, 0.82); color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font: 600 14px/1 var(--sl-font); letter-spacing: 0.01em;
+  cursor: pointer; backdrop-filter: blur(8px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+.sl-launch:hover { background: rgba(20, 25, 35, 0.95); border-color: var(--sl-accent); transform: translateX(-50%) translateY(-1px); }
+.sl-launch[hidden] { display: none; }
+.sl-launch-icon {
+  display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%;
+  background: var(--sl-accent); color: #1a1205; font: 700 11px/1 var(--sl-mono);
+}
+.sl-launch kbd, .sl-close kbd {
+  font: 600 11px/1 var(--sl-mono); padding: 3px 6px; border-radius: 4px;
+  background: rgba(255, 255, 255, 0.12); color: var(--sl-muted);
+}
+
+/* ---- Overlay ---- */
+.sl-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  display: grid; place-items: center;
+  padding: clamp(8px, 2.2vw, 32px);
+  background: rgba(6, 8, 12, 0.72);
+  backdrop-filter: blur(6px) saturate(0.8);
+  color: var(--sl-text); font: 18px/1.55 var(--sl-font);
+  cursor: default;
+  animation: sl-fade 0.2s ease-out;
+}
+.sl-overlay[hidden] { display: none; }
+@keyframes sl-fade { from { opacity: 0; } }
+
+.sl-deck {
+  width: min(1440px, 100%); height: min(900px, 100%);
+  display: grid; grid-template-rows: auto 1fr auto;
+  background: var(--sl-bg); border: 1px solid var(--sl-line); border-radius: 18px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.sl-top, .sl-bottom {
+  display: flex; align-items: center; gap: 16px;
+  padding: 12px 20px; border-color: var(--sl-line); border-style: solid; border-width: 0;
+}
+.sl-top { border-bottom-width: 1px; }
+.sl-bottom { border-top-width: 1px; justify-content: space-between; }
+
+.sl-crumb { display: flex; align-items: baseline; gap: 10px; min-width: 0; flex: 1; }
+.sl-step { font: 700 13px/1 var(--sl-mono); color: var(--sl-accent); text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+.sl-step-title { color: var(--sl-muted); font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sl-paused { font-size: 12px; color: var(--sl-muted); display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.sl-paused::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #ff6b6b; box-shadow: 0 0 8px #ff6b6b; }
+
+.sl-overlay button { font: inherit; color: inherit; cursor: pointer; }
+.sl-close {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border-radius: 8px; border: 1px solid var(--sl-line);
+  background: rgba(255, 255, 255, 0.05); font-size: 14px !important; font-weight: 600 !important;
+}
+.sl-close:hover { border-color: var(--sl-accent); }
+
+/* ---- Navigatie onderaan ---- */
+.sl-nav { display: flex; align-items: center; gap: 12px; }
+.sl-nav > button {
+  width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--sl-line);
+  background: rgba(255, 255, 255, 0.05); font-size: 22px !important; line-height: 1 !important;
+}
+.sl-nav > button:hover:not(:disabled) { border-color: var(--sl-accent); color: var(--sl-accent); }
+.sl-nav > button:disabled { opacity: 0.3; cursor: default; }
+.sl-dots { display: flex; gap: 7px; }
+.sl-dots button { width: 9px; height: 9px; padding: 0; border-radius: 50%; border: 0; background: rgba(255, 255, 255, 0.2); transition: all 0.15s; }
+.sl-dots button:hover { background: rgba(255, 255, 255, 0.5); }
+.sl-dots button.on { background: var(--sl-accent); width: 24px; border-radius: 5px; }
+.sl-stepnav { flex: 1; font-size: 14px; }
+.sl-stepnav-right { text-align: right; }
+.sl-stepnav a { color: var(--sl-muted); text-decoration: none; }
+.sl-stepnav a:hover { color: var(--sl-accent); }
+
+/* ---- Slide ---- */
+.sl-stage { overflow-y: auto; overflow-x: hidden; min-height: 0; }
+.sl-slide { min-height: 100%; padding: clamp(20px, 3.2vw, 44px) clamp(20px, 3.6vw, 52px); }
+.sl-enter { animation: sl-in 0.28s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.sl-stage[data-dir='-1'] .sl-enter { animation-name: sl-in-back; }
+@keyframes sl-in { from { opacity: 0; transform: translateX(18px); } }
+@keyframes sl-in-back { from { opacity: 0; transform: translateX(-18px); } }
+
+.sl-split { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: clamp(20px, 3vw, 44px); align-items: start; }
+.sl-wide.sl-split { grid-template-columns: minmax(0, 7fr) minmax(0, 18fr); }
+.sl-solo { max-width: 860px; }
+
+.sl-kicker { font: 600 12px/1 var(--sl-mono); color: var(--sl-accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+.sl-slide h2 { font-size: clamp(24px, 2.6vw, 36px); line-height: 1.15; font-weight: 750; letter-spacing: -0.015em; margin-bottom: 18px; text-wrap: balance; }
+
+.sl-text { color: #cdd3df; }
+.sl-text p { margin-bottom: 12px; }
+.sl-text ul, .sl-text ol { margin: 0 0 12px 1.2em; }
+.sl-text li { margin-bottom: 7px; padding-left: 2px; }
+.sl-text li::marker { color: var(--sl-accent); }
+.sl-text b, .sl-text strong { color: #fff; }
+.sl-text code, .sl-try code {
+  font: 0.86em var(--sl-mono); padding: 1px 6px; border-radius: 5px;
+  background: rgba(255, 255, 255, 0.08); color: #ffd79a; white-space: nowrap;
+}
+.sl-text em { color: var(--sl-blue); font-style: normal; }
+.sl-note { font-size: 15px; color: var(--sl-muted); border-left: 2px solid var(--sl-line); padding-left: 12px; }
+
+.sl-try {
+  margin-top: 18px; padding: 12px 14px; border-radius: 10px;
+  background: var(--sl-accent-soft); border: 1px solid rgba(255, 181, 71, 0.25);
+  font-size: 15.5px; color: #f3e3c7;
+}
+.sl-try-label { display: block; font: 700 11px/1 var(--sl-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--sl-accent); margin-bottom: 6px; }
+
+/* ---- Intro ---- */
+.sl-intro { max-width: 980px; }
+.sl-intro h2 { font-size: clamp(30px, 3.6vw, 50px); }
+.sl-question { font-size: clamp(20px, 1.8vw, 25px); line-height: 1.4; color: #fff; margin-bottom: 14px !important; }
+.sl-agenda { list-style: none; margin-top: 26px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px; }
+.sl-agenda button {
+  width: 100%; display: flex; align-items: center; gap: 12px; text-align: left;
+  padding: 11px 14px; border-radius: 10px; border: 1px solid var(--sl-line);
+  background: var(--sl-panel); font-size: 16px !important; line-height: 1.3 !important;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.sl-agenda button:hover { border-color: var(--sl-accent); transform: translateX(2px); }
+.sl-agenda span { font: 700 12px/1 var(--sl-mono); color: var(--sl-accent); min-width: 1.6em; }
+
+/* ---- Code ---- */
+.sl-visual { display: grid; gap: 16px; min-width: 0; }
+.sl-code { margin: 0; border: 1px solid var(--sl-line); border-radius: 12px; overflow: hidden; background: #0a0c11; }
+.sl-code figcaption {
+  padding: 8px 14px; font: 12px/1 var(--sl-mono); color: var(--sl-muted);
+  border-bottom: 1px solid var(--sl-line); background: rgba(255, 255, 255, 0.025);
+}
+.sl-code pre { margin: 0; padding: 12px 0; overflow: auto; max-height: 62vh; }
+.sl-code code { font: clamp(12px, 0.95vw, 14px)/1.6 var(--sl-mono); color: #d6deeb; display: block; min-width: max-content; }
+.sl-code .ln { display: block; padding: 0 18px; border-left: 3px solid transparent; white-space: pre; }
+.sl-code .ln.hl { background: var(--sl-accent-soft); border-left-color: var(--sl-accent); }
+.tk-c { color: #6f7b94; font-style: italic; }
+.tk-s { color: #b5e08c; }
+.tk-n { color: #ffbd76; }
+.tk-k { color: #d3a1ff; }
+.tk-f { color: #82c4ff; }
+
+/* ---- Diagrammen ---- */
+.sl-diagram { border: 1px solid var(--sl-line); border-radius: 12px; background: var(--sl-panel); padding: 18px; overflow: auto; }
+.sl-diagram svg { display: block; width: 100%; height: auto; max-height: 36vh; margin: 0 auto; }
+.sl-diagram pre { font: 14px/1.45 var(--sl-mono); color: #cdd3df; margin: 0; white-space: pre; }
+.sl-diagram .acc { color: var(--sl-accent); }
+
+.sl-flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; }
+.sl-flow > div {
+  flex: 1 1 120px; padding: 10px 12px; border-radius: 10px;
+  background: #1b2130; border: 1px solid var(--sl-line); font-size: 15px; line-height: 1.35;
+  position: relative;
+}
+.sl-flow > div b { display: block; color: #fff; font-size: 15px; margin-bottom: 3px; }
+.sl-flow > div small { color: var(--sl-muted); font-size: 13px; }
+.sl-flow > i { align-self: center; color: var(--sl-accent); font-style: normal; font-size: 18px; }
+
+.sl-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.sl-cols > div { padding: 14px; border-radius: 10px; background: #1b2130; border: 1px solid var(--sl-line); font-size: 15px; }
+.sl-cols h4 { font-size: 13px; font-family: var(--sl-mono); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+.sl-cols ul { margin-left: 1.1em; color: #cdd3df; }
+
+.sl-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.sl-table th, .sl-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--sl-line); vertical-align: top; }
+.sl-table th { font: 600 12px/1.2 var(--sl-mono); color: var(--sl-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.sl-table td:first-child { white-space: nowrap; color: #fff; font-weight: 600; }
+
+/* ---- Smalle schermen ---- */
+@media (max-width: 860px) {
+  .sl-split, .sl-wide.sl-split { grid-template-columns: 1fr; }
+  .sl-paused, .sl-step-title, .sl-close kbd, .sl-launch kbd { display: none; }
+  .sl-stepnav { font-size: 12px; }
+}

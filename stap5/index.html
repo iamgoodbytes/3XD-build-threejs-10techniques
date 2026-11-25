@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stap 5 – Raycasting</title>
+  <style>
+    /* Knoppenbalk linksonder: sneltoetsen die je kan aanklikken én die tonen wat aan staat */
+    #tools { position: fixed; left: 12px; bottom: 16px; display: flex; flex-direction: column; gap: 6px; }
+    #tools button {
+      display: flex; align-items: center; gap: 10px; min-width: 250px;
+      padding: 7px 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(0, 0, 0, 0.6); color: #fff; font: 14px/1.2 system-ui, sans-serif;
+      text-align: left; cursor: pointer;
+    }
+    #tools button:hover { border-color: #00e5ff; }
+    #tools kbd {
+      display: inline-grid; place-items: center; min-width: 24px; height: 24px; border-radius: 5px;
+      background: #fff; color: #000; font: 700 13px/1 ui-monospace, Menlo, monospace;
+    }
+    #tools .label { flex: 1; }
+    #tools .state { font: 600 11px/1 ui-monospace, Menlo, monospace; text-transform: uppercase; color: #8a93a6; }
+    #tools button.on { border-color: rgba(0, 229, 255, 0.6); }
+    #tools button.on .state { color: #00e5ff; }
+    #hint {
+      position: fixed; left: 12px; bottom: 100px; max-width: 360px;
+      padding: 10px 12px; border-radius: 8px; border-left: 3px solid #00e5ff;
+      background: rgba(0, 0, 0, 0.7); color: #fff; font: 13.5px/1.45 system-ui, sans-serif;
+    }
+    #hint[hidden] { display: none; }
+    #hint kbd { background: #fff; color: #000; border-radius: 4px; padding: 0 5px; font: 700 12px ui-monospace, Menlo, monospace; }
+  </style>
+</head>
+<body>
+  <div id="hud">
+    <h1>Stap 5 – Raycasting</h1>
+    <b>W/↑</b> gas · <b>S/↓</b> rem/achteruit · <b>A/D</b> of <b>←/→</b> sturen<br />
+    Snelheid: <span id="speed">0</span> km/u · Blokjes omver: <span id="fallen">0</span><br />
+    <b>Muis:</b> klik op een blokje = wegschieten · klik op de grond = rij erheen<br />
+    <span style="color:#ff66ff">■</span> ray · <span style="color:#00e5ff">■</span> camera bij de klik (= start van de ray) + waar ze sindsdien heen reed · laatste 5 klikken blijven staan<br />
+    <a href="/">← overzicht</a>
+  </div>
+
+  <div id="hint" hidden>
+    Deze ray start in <b>jouw eigen oog</b>: je kijkt er recht langs, dus je ziet hem als een punt.<br />
+    Druk <kbd>V</kbd> om terug te gaan en hem van opzij te zien.
+  </div>
+
+  <div id="tools">
+    <button type="button" data-action="overview"><kbd>V</kbd><span class="label">Vogelperspectief</span><span class="state"></span></button>
+    <button type="button" data-action="rebuild"><kbd>R</kbd><span class="label">Blokjes opnieuw opbouwen</span></button>
+  </div>
+  <script type="module" src="../slides/slides.js"></script>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

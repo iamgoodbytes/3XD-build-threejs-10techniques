@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stap 7 – Ambulance + preloader</title>
+  <style>
+    #stats { font-variant-numeric: tabular-nums; }
+    #stats b { display: inline-block; min-width: 4ch; }
+    #overlay {
+      position: fixed; inset: 0; display: grid; place-items: center;
+      background: rgba(0, 0, 0, 0.35); color: #fff;
+      font: 16px/1.6 system-ui, sans-serif; text-align: center;
+    }
+    #overlay.hidden { display: none; }
+    #overlay .panel { background: rgba(0, 0, 0, 0.65); padding: 28px 40px; border-radius: 12px; }
+    #overlay h1 { font-size: 32px; margin-bottom: 8px; }
+    #overlay .key { margin-top: 16px; font-size: 18px; }
+    #overlay kbd { background: #fff; color: #000; border-radius: 4px; padding: 2px 8px; font: inherit; }
+
+    /* PRELOADER: ligt boven alles, fadet uit als alles klaar is */
+    #loader {
+      position: fixed; inset: 0; z-index: 10;
+      display: grid; place-items: center; align-content: center; gap: 14px;
+      background: #10141c; color: #fff; font: 15px/1.5 system-ui, sans-serif;
+      transition: opacity 0.6s ease;
+    }
+    #loader.done { opacity: 0; pointer-events: none; }
+    #loader .title { font-size: 28px; font-weight: 700; }
+    #loader .bar { width: min(360px, 70vw); height: 10px; border-radius: 5px; background: #2a3140; overflow: hidden; }
+    #loader .bar-fill { width: 0%; height: 100%; background: #ff4d6d; transition: width 0.25s ease; }
+    #loader .status { opacity: 0.75; font-size: 13px; min-height: 1.5em; }
+    #loader.error .bar-fill { background: #888; }
+    #loader.error .status { color: #ff8fa3; opacity: 1; }
+    /* Knoppenbalk linksonder: sneltoets tonen + status, ook aanklikbaar */
+    #tools { position: fixed; left: 12px; bottom: 16px; z-index: 5; display: flex; flex-direction: column; gap: 6px; }
+    #tools button {
+      display: flex; align-items: center; gap: 10px; min-width: 250px;
+      padding: 7px 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(0, 0, 0, 0.6); color: #fff; font: 14px/1.2 system-ui, sans-serif;
+      text-align: left; cursor: pointer;
+    }
+    #tools button:hover { border-color: #4d8bff; }
+    #tools kbd {
+      display: inline-grid; place-items: center; min-width: 24px; height: 24px; border-radius: 5px;
+      background: #fff; color: #000; font: 700 13px/1 ui-monospace, Menlo, monospace;
+    }
+    #tools .label { flex: 1; }
+    #tools .state { font: 600 11px/1 ui-monospace, Menlo, monospace; text-transform: uppercase; color: #8a93a6; }
+    #tools button.on { border-color: rgba(77, 139, 255, 0.8); box-shadow: 0 0 14px rgba(47, 107, 255, 0.45); }
+    #tools button.on .state { color: #6fa0ff; }
+  </style>
+</head>
+<body>
+  <div id="hud">
+    <h1>Stap 7 – Ambulance + preloader</h1>
+    <div id="stats">
+      Score: <b id="score">0</b> · Afstand: <b id="distance">0</b> m<br />
+      Snelheid: <b id="speed">0</b> km/u · Ladingen: <b id="charges">💣💣💣</b>
+    </div>
+    <a href="/">← overzicht</a>
+  </div>
+
+  <div id="loader">
+    <div class="title">🚑 Laden…</div>
+    <div class="bar"><div class="bar-fill"></div></div>
+    <div class="status">Starten…</div>
+  </div>
+
+  <div id="overlay" class="hidden">
+    <div class="panel">
+      <h1 id="overlay-title">Eindeloze ambulancerit</h1>
+      <p id="overlay-text">
+        <b>W/↑</b> = gas · <b>S/↓</b> = rem · <b>A/D</b> of <b>←/→</b> = sturen<br />
+        Rij blokjes omver voor punten · ontwijk de <span style="color:#ff6b6b">rode barrières</span><br />
+        <b>Klik</b> op een barrière om ze op te blazen (beperkte ladingen, +1 per 200 m)<br />
+        <b>H</b> = sirene + zwaailichten 🚨
+      </p>
+      <p class="key"><kbd>Spatie</kbd> om te starten</p>
+    </div>
+  </div>
+
+  <div id="tools">
+    <button type="button" data-action="siren"><kbd>H</kbd><span class="label">🚨 Sirene + zwaailichten</span><span class="state"></span></button>
+  </div>
+
+  <script type="module" src="../slides/slides.js"></script>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
